@@ -61,14 +61,38 @@ const uploadImage = async (req, res) => {
 
   let imagesPath = [];
 
-  for (image of productImages) {
-    if (!image.mimetype.startsWith("image")) {
+  if (Array.isArray(req.files.images)) {
+    for (image of productImages) {
+      if (!image.mimetype.startsWith("image")) {
+        throw new CustomError.BadRequestError("Please Upload Image");
+      }
+
+      const maxSize = 1024 * 1024;
+
+      if (image.size > maxSize) {
+        throw new CustomError.BadRequestError(
+          "Please upload image smaller than 1MB"
+        );
+      }
+
+      const imagePath = path.join(
+        __dirname,
+        "../public/uploads/" + `${image.name}`
+      );
+      await image.mv(imagePath);
+
+      // let path = `/uploads/${image.name}`;
+
+      imagesPath = [...imagesPath, `/uploads/${image.name}`];
+    }
+  } else {
+    if (!productImages.mimetype.startsWith("image")) {
       throw new CustomError.BadRequestError("Please Upload Image");
     }
 
     const maxSize = 1024 * 1024;
 
-    if (image.size > maxSize) {
+    if (productImages.size > maxSize) {
       throw new CustomError.BadRequestError(
         "Please upload image smaller than 1MB"
       );
@@ -76,13 +100,11 @@ const uploadImage = async (req, res) => {
 
     const imagePath = path.join(
       __dirname,
-      "../public/uploads/" + `${image.name}`
+      "../public/uploads/" + `${productImages.name}`
     );
-    await image.mv(imagePath);
+    await productImages.mv(imagePath);
 
-    // let path = `/uploads/${image.name}`;
-
-    imagesPath = [...imagesPath, `/uploads/${image.name}`];
+    imagesPath = [`/uploads/${productImages.name}`];
   }
 
   res.status(StatusCodes.OK).json({ images: imagesPath });

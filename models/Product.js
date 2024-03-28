@@ -30,13 +30,24 @@ const ProductSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, "Please provide product category"],
-      enum: ["office", "kitchen", "bedroom"],
+      // enum: ["office", "kitchen", "bedroom"],
+      enum: ["office", "kitchen", "bedroom", "men"],
     },
     company: {
       type: String,
       required: [true, "Please provide company"],
       enum: {
-        values: ["ikea", "liddy", "marcos"],
+        // values: ["ikea", "liddy", "marcos"],
+        values: ["ikea", "liddy", "marcos", "lacoste", "mobaco"],
+        message: "{VALUE} is not supported",
+      },
+    },
+    sizes: {
+      type: [String],
+      required: [true, "Please provide size"],
+      default: ["s"],
+      enum: {
+        values: ["xs", "s", "m", "l", "xl", "xxl", "3xl", "4xl", "5xl", "6xl"],
         message: "{VALUE} is not supported",
       },
     },
