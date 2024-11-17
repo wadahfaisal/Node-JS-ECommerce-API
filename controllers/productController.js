@@ -25,6 +25,34 @@ const getAllProducts = async (req, res) => {
   res.status(StatusCodes.OK).json({ products, count: products.length });
 };
 
+const getPaginatedProducts = async (req, res) => {
+  try {
+    const { search } = req.query;
+    let queryObject = {};
+
+    if (search) {
+      queryObject.name = { $regex: search, $options: "i" };
+    }
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const totalProducts = await Product.countDocuments(queryObject);
+    const numOfPages = Math.ceil(totalProducts / limit);
+
+    console.log(queryObject);
+    const products = await Product.find(queryObject)
+      .sort("-createdAt")
+      .limit(limit)
+      .skip(skip);
+
+    res.status(200).json({ products, totalProducts, numOfPages });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const getSingleProduct = async (req, res) => {
   const { id: productId } = req.params;
 
@@ -175,6 +203,43 @@ const uploadImages = async (req, res) => {
 //   res.status(StatusCodes.OK).json({ image: `/uploads/${productImage.name}` });
 // };
 
+const getProductsStats = async (req, res) => {
+  const products = await Product.find();
+
+  const productsValues = [];
+  const productsQuantities = [];
+  const productsCategories = [];
+
+  products.map((product) => {
+    const { price, inventory, category } = product;
+    const productValue = price * inventory;
+
+    return (
+      productsValues.push(productValue),
+      productsQuantities.push(inventory),
+      productsCategories.push(category)
+    );
+  });
+
+  let storeValue = productsValues.reduce((accumulator, currentValue) => {
+    return accumulator + currentValue;
+  }, 0);
+
+  // storeValue = Number(storeValue.toFixed(4))
+
+  const uniqueCategoriesCount = [...new Set(productsCategories)].length;
+
+  const outOfStockCount = products.filter(
+    (product) => product.inventory < 1
+  ).length;
+
+  return res.status(200).json({
+    storeValue,
+    outOfStock: outOfStockCount,
+    categoriesCount: uniqueCategoriesCount,
+  });
+};
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -182,4 +247,6 @@ module.exports = {
   updateProduct,
   deleteProduct,
   uploadImages,
+  getPaginatedProducts,
+  getProductsStats,
 };

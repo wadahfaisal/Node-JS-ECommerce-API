@@ -12,6 +12,8 @@ const {
   updateProduct,
   deleteProduct,
   uploadImages,
+  getPaginatedProducts,
+  getProductsStats,
 } = require("../controllers/productController");
 
 const { getSingleProductReviews } = require("../controllers/reviewController");
@@ -21,8 +23,20 @@ router
   .post([authenticateUser, authorizePermissions("admin")], createProduct)
   .get(getAllProducts);
 
+router.get(
+  "/paginated",
+  [authenticateUser, authorizePermissions("admin")],
+  getPaginatedProducts
+);
+
+router.get(
+  "/stats",
+  [authenticateUser, authorizePermissions("admin")],
+  getProductsStats
+);
+
 router
-  .route("/uploadImage")
+  .route("/uploadImages")
   .post([authenticateUser, authorizePermissions("admin")], uploadImages);
 
 router
