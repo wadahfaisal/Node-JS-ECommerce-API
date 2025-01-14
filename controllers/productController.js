@@ -41,7 +41,6 @@ const getPaginatedProducts = async (req, res) => {
     const totalProducts = await Product.countDocuments(queryObject);
     const numOfPages = Math.ceil(totalProducts / limit);
 
-    console.log(queryObject);
     const products = await Product.find(queryObject)
       .sort("-createdAt")
       .limit(limit)
