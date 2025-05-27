@@ -3,4 +3,4 @@
 .git
 Procfile
 /public
-/dist
+# /dist
